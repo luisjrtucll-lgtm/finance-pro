@@ -7,7 +7,9 @@ const tabs = [
   { id: 'budgets', label: 'Orçamentos' },
   { id: 'goals', label: 'Metas' },
   { id: 'debts', label: 'Dívidas' },
+  { id: 'cards', label: 'Cartões' },
   { id: 'investments', label: 'Invest.' },
+  { id: 'recurring', label: 'Recorrentes' },
   { id: 'reports', label: 'Relatórios' },
 ];
 
@@ -44,6 +46,49 @@ const defaultGoalForm = {
   currentAmount: '',
   deadline: '',
   color: '#3dd598',
+};
+
+const defaultDebtForm = {
+  name: '',
+  balance: '',
+  rate: '',
+  monthlyPayment: '',
+  dueDay: '10',
+  status: 'em_andamento',
+};
+
+const defaultCardForm = {
+  name: '',
+  limitAmount: '',
+  usedAmount: '',
+  dueDay: '10',
+  closingDay: '5',
+  color: '#5da8ff',
+};
+
+const defaultInvestmentForm = {
+  name: '',
+  type: 'Renda fixa',
+  value: '',
+  monthlyContribution: '',
+  performance: '',
+};
+
+const defaultRecurringForm = {
+  title: '',
+  category: 'Casa',
+  amount: '',
+  type: 'expense',
+  frequency: 'mensal',
+  nextDate: new Date().toISOString().slice(0, 10),
+  active: true,
+};
+
+const defaultSettingsForm = {
+  currency: 'EUR',
+  theme: 'dark',
+  monthlyIncomeGoal: 0,
+  emergencyFundTarget: 0,
 };
 
 const formatCurrency = (value) =>
@@ -91,15 +136,20 @@ function App() {
     budgets: [],
     goals: [],
     debts: [],
-    investments: [],
     cards: [],
+    investments: [],
     recurring: [],
-    settings: { currency: 'EUR' },
+    settings: { currency: 'EUR', theme: 'dark', monthly_income_goal: 0, emergency_fund_target: 0 },
   });
   const [transactionForm, setTransactionForm] = useState(defaultTransactionForm);
   const [accountForm, setAccountForm] = useState(defaultAccountForm);
   const [budgetForm, setBudgetForm] = useState(defaultBudgetForm);
   const [goalForm, setGoalForm] = useState(defaultGoalForm);
+  const [debtForm, setDebtForm] = useState(defaultDebtForm);
+  const [cardForm, setCardForm] = useState(defaultCardForm);
+  const [investmentForm, setInvestmentForm] = useState(defaultInvestmentForm);
+  const [recurringForm, setRecurringForm] = useState(defaultRecurringForm);
+  const [settingsForm, setSettingsForm] = useState(defaultSettingsForm);
   const [statusMessage, setStatusMessage] = useState('');
 
   useEffect(() => {
@@ -107,6 +157,17 @@ function App() {
       fetchDashboard();
     }
   }, [token]);
+
+  useEffect(() => {
+    if (data.settings) {
+      setSettingsForm({
+        currency: data.settings.currency || 'EUR',
+        theme: data.settings.theme || 'dark',
+        monthlyIncomeGoal: data.settings.monthly_income_goal || 0,
+        emergencyFundTarget: data.settings.emergency_fund_target || 0,
+      });
+    }
+  }, [data.settings]);
 
   const fetchDashboard = async () => {
     if (!token) return;
@@ -159,10 +220,10 @@ function App() {
       budgets: [],
       goals: [],
       debts: [],
-      investments: [],
       cards: [],
+      investments: [],
       recurring: [],
-      settings: { currency: 'EUR' },
+      settings: { currency: 'EUR', theme: 'dark', monthly_income_goal: 0, emergency_fund_target: 0 },
     });
   };
 
@@ -247,6 +308,113 @@ function App() {
       }, token);
       setGoalForm(defaultGoalForm);
       setStatusMessage('Meta cadastrada com sucesso.');
+      fetchDashboard();
+    } catch (error) {
+      setStatusMessage(error.message);
+    }
+  };
+
+  const addDebt = async (event) => {
+    event.preventDefault();
+    try {
+      await fetchWithAuth('/api/debts', {
+        method: 'POST',
+        body: JSON.stringify({
+          name: debtForm.name,
+          balance: Number(debtForm.balance),
+          rate: Number(debtForm.rate || 0),
+          monthlyPayment: Number(debtForm.monthlyPayment || 0),
+          dueDay: Number(debtForm.dueDay || 10),
+          status: debtForm.status,
+        }),
+      }, token);
+      setDebtForm(defaultDebtForm);
+      setStatusMessage('Dívida cadastrada com sucesso.');
+      fetchDashboard();
+    } catch (error) {
+      setStatusMessage(error.message);
+    }
+  };
+
+  const addCard = async (event) => {
+    event.preventDefault();
+    try {
+      await fetchWithAuth('/api/cards', {
+        method: 'POST',
+        body: JSON.stringify({
+          name: cardForm.name,
+          limitAmount: Number(cardForm.limitAmount),
+          usedAmount: Number(cardForm.usedAmount || 0),
+          dueDay: Number(cardForm.dueDay || 10),
+          closingDay: Number(cardForm.closingDay || 5),
+          color: cardForm.color,
+        }),
+      }, token);
+      setCardForm(defaultCardForm);
+      setStatusMessage('Cartão cadastrado com sucesso.');
+      fetchDashboard();
+    } catch (error) {
+      setStatusMessage(error.message);
+    }
+  };
+
+  const addInvestment = async (event) => {
+    event.preventDefault();
+    try {
+      await fetchWithAuth('/api/investments', {
+        method: 'POST',
+        body: JSON.stringify({
+          name: investmentForm.name,
+          type: investmentForm.type,
+          value: Number(investmentForm.value),
+          monthlyContribution: Number(investmentForm.monthlyContribution || 0),
+          performance: Number(investmentForm.performance || 0),
+        }),
+      }, token);
+      setInvestmentForm(defaultInvestmentForm);
+      setStatusMessage('Investimento cadastrado com sucesso.');
+      fetchDashboard();
+    } catch (error) {
+      setStatusMessage(error.message);
+    }
+  };
+
+  const addRecurring = async (event) => {
+    event.preventDefault();
+    try {
+      await fetchWithAuth('/api/recurring', {
+        method: 'POST',
+        body: JSON.stringify({
+          title: recurringForm.title,
+          category: recurringForm.category,
+          amount: Number(recurringForm.amount),
+          type: recurringForm.type,
+          frequency: recurringForm.frequency,
+          nextDate: recurringForm.nextDate,
+          active: recurringForm.active,
+        }),
+      }, token);
+      setRecurringForm(defaultRecurringForm);
+      setStatusMessage('Conta recorrente cadastrada com sucesso.');
+      fetchDashboard();
+    } catch (error) {
+      setStatusMessage(error.message);
+    }
+  };
+
+  const saveSettings = async (event) => {
+    event.preventDefault();
+    try {
+      await fetchWithAuth('/api/settings', {
+        method: 'PUT',
+        body: JSON.stringify({
+          currency: settingsForm.currency,
+          theme: settingsForm.theme,
+          monthlyIncomeGoal: Number(settingsForm.monthlyIncomeGoal || 0),
+          emergencyFundTarget: Number(settingsForm.emergencyFundTarget || 0),
+        }),
+      }, token);
+      setStatusMessage('Configurações salvas com sucesso.');
       fetchDashboard();
     } catch (error) {
       setStatusMessage(error.message);
@@ -525,6 +693,25 @@ function App() {
           <div className="stack">
             <section className="panel">
               <div className="panel-header">
+                <h3>Cadastrar dívida</h3>
+              </div>
+              <form onSubmit={addDebt} className="form-grid compact">
+                <input value={debtForm.name} onChange={(e) => setDebtForm({ ...debtForm, name: e.target.value })} placeholder="Nome da dívida" />
+                <input type="number" step="0.01" value={debtForm.balance} onChange={(e) => setDebtForm({ ...debtForm, balance: e.target.value })} placeholder="Saldo" />
+                <input type="number" step="0.01" value={debtForm.rate} onChange={(e) => setDebtForm({ ...debtForm, rate: e.target.value })} placeholder="Taxa %" />
+                <input type="number" step="0.01" value={debtForm.monthlyPayment} onChange={(e) => setDebtForm({ ...debtForm, monthlyPayment: e.target.value })} placeholder="Pagamento mensal" />
+                <input type="number" min="1" max="31" value={debtForm.dueDay} onChange={(e) => setDebtForm({ ...debtForm, dueDay: e.target.value })} placeholder="Dia do vencimento" />
+                <select value={debtForm.status} onChange={(e) => setDebtForm({ ...debtForm, status: e.target.value })}>
+                  <option value="em_andamento">Em andamento</option>
+                  <option value="quitada">Quitada</option>
+                  <option value="atrasada">Atrasada</option>
+                </select>
+                <button className="primary-button" type="submit">Salvar dívida</button>
+              </form>
+            </section>
+
+            <section className="panel">
+              <div className="panel-header">
                 <h3>Dívidas e pagamentos</h3>
               </div>
               <ul className="list">
@@ -542,8 +729,63 @@ function App() {
           </div>
         )}
 
+        {activeTab === 'cards' && (
+          <div className="stack">
+            <section className="panel">
+              <div className="panel-header">
+                <h3>Cadastrar cartão</h3>
+              </div>
+              <form onSubmit={addCard} className="form-grid compact">
+                <input value={cardForm.name} onChange={(e) => setCardForm({ ...cardForm, name: e.target.value })} placeholder="Nome do cartão" />
+                <input type="number" step="0.01" value={cardForm.limitAmount} onChange={(e) => setCardForm({ ...cardForm, limitAmount: e.target.value })} placeholder="Limite" />
+                <input type="number" step="0.01" value={cardForm.usedAmount} onChange={(e) => setCardForm({ ...cardForm, usedAmount: e.target.value })} placeholder="Usado" />
+                <input type="number" min="1" max="31" value={cardForm.dueDay} onChange={(e) => setCardForm({ ...cardForm, dueDay: e.target.value })} placeholder="Vencimento" />
+                <input type="number" min="1" max="31" value={cardForm.closingDay} onChange={(e) => setCardForm({ ...cardForm, closingDay: e.target.value })} placeholder="Fechamento" />
+                <input type="color" value={cardForm.color} onChange={(e) => setCardForm({ ...cardForm, color: e.target.value })} />
+                <button className="primary-button" type="submit">Salvar cartão</button>
+              </form>
+            </section>
+
+            <section className="panel">
+              <div className="panel-header">
+                <h3>Cartões</h3>
+              </div>
+              <ul className="list">
+                {data.cards.length ? data.cards.map((card) => (
+                  <li key={card.id} className="list-item">
+                    <div>
+                      <strong>{card.name}</strong>
+                      <small>Vence dia {card.due_day || 1}</small>
+                    </div>
+                    <span>{formatCurrency(card.limit_amount)}</span>
+                  </li>
+                )) : <li className="empty-state">Nenhum cartão cadastrado.</li>}
+              </ul>
+            </section>
+          </div>
+        )}
+
         {activeTab === 'investments' && (
           <div className="stack">
+            <section className="panel">
+              <div className="panel-header">
+                <h3>Cadastrar investimento</h3>
+              </div>
+              <form onSubmit={addInvestment} className="form-grid compact">
+                <input value={investmentForm.name} onChange={(e) => setInvestmentForm({ ...investmentForm, name: e.target.value })} placeholder="Nome do investimento" />
+                <select value={investmentForm.type} onChange={(e) => setInvestmentForm({ ...investmentForm, type: e.target.value })}>
+                  <option value="Renda fixa">Renda fixa</option>
+                  <option value="Ações">Ações</option>
+                  <option value="FIIs">FIIs</option>
+                  <option value="Cripto">Cripto</option>
+                </select>
+                <input type="number" step="0.01" value={investmentForm.value} onChange={(e) => setInvestmentForm({ ...investmentForm, value: e.target.value })} placeholder="Valor atual" />
+                <input type="number" step="0.01" value={investmentForm.monthlyContribution} onChange={(e) => setInvestmentForm({ ...investmentForm, monthlyContribution: e.target.value })} placeholder="Contribuição mensal" />
+                <input type="number" step="0.01" value={investmentForm.performance} onChange={(e) => setInvestmentForm({ ...investmentForm, performance: e.target.value })} placeholder="Performance %" />
+                <button className="primary-button" type="submit">Salvar investimento</button>
+              </form>
+            </section>
+
             <section className="panel">
               <div className="panel-header">
                 <h3>Investimentos</h3>
@@ -558,6 +800,53 @@ function App() {
                     <span>{formatCurrency(investment.value)}</span>
                   </li>
                 )) : <li className="empty-state">Nenhum investimento cadastrado.</li>}
+              </ul>
+            </section>
+          </div>
+        )}
+
+        {activeTab === 'recurring' && (
+          <div className="stack">
+            <section className="panel">
+              <div className="panel-header">
+                <h3>Despesas recorrentes</h3>
+              </div>
+              <form onSubmit={addRecurring} className="form-grid compact">
+                <input value={recurringForm.title} onChange={(e) => setRecurringForm({ ...recurringForm, title: e.target.value })} placeholder="Título" />
+                <input value={recurringForm.category} onChange={(e) => setRecurringForm({ ...recurringForm, category: e.target.value })} placeholder="Categoria" />
+                <input type="number" step="0.01" value={recurringForm.amount} onChange={(e) => setRecurringForm({ ...recurringForm, amount: e.target.value })} placeholder="Valor" />
+                <select value={recurringForm.type} onChange={(e) => setRecurringForm({ ...recurringForm, type: e.target.value })}>
+                  <option value="expense">Despesa</option>
+                  <option value="income">Receita</option>
+                </select>
+                <select value={recurringForm.frequency} onChange={(e) => setRecurringForm({ ...recurringForm, frequency: e.target.value })}>
+                  <option value="mensal">Mensal</option>
+                  <option value="trimestral">Trimestral</option>
+                  <option value="anual">Anual</option>
+                </select>
+                <input type="date" value={recurringForm.nextDate} onChange={(e) => setRecurringForm({ ...recurringForm, nextDate: e.target.value })} />
+                <label className="checkbox-row">
+                  <input type="checkbox" checked={recurringForm.active} onChange={(e) => setRecurringForm({ ...recurringForm, active: e.target.checked })} />
+                  Ativa
+                </label>
+                <button className="primary-button" type="submit">Salvar recorrente</button>
+              </form>
+            </section>
+
+            <section className="panel">
+              <div className="panel-header">
+                <h3>Contas a vencer</h3>
+              </div>
+              <ul className="list">
+                {data.recurring.length ? data.recurring.map((item) => (
+                  <li key={item.id} className="list-item">
+                    <div>
+                      <strong>{item.title}</strong>
+                      <small>{item.frequency}</small>
+                    </div>
+                    <span>{formatCurrency(item.amount)}</span>
+                  </li>
+                )) : <li className="empty-state">Nenhuma conta recorrente.</li>}
               </ul>
             </section>
           </div>
@@ -587,6 +876,26 @@ function App() {
                   <strong>{data.dashboard.upcomingBills}</strong>
                 </div>
               </div>
+            </section>
+
+            <section className="panel">
+              <div className="panel-header">
+                <h3>Configurações</h3>
+              </div>
+              <form onSubmit={saveSettings} className="form-grid compact">
+                <select value={settingsForm.currency} onChange={(e) => setSettingsForm({ ...settingsForm, currency: e.target.value })}>
+                  <option value="EUR">Euro (€)</option>
+                  <option value="BRL">Real (R$)</option>
+                  <option value="USD">Dólar ($)</option>
+                </select>
+                <select value={settingsForm.theme} onChange={(e) => setSettingsForm({ ...settingsForm, theme: e.target.value })}>
+                  <option value="dark">Tema escuro</option>
+                  <option value="light">Tema claro</option>
+                </select>
+                <input type="number" step="0.01" value={settingsForm.monthlyIncomeGoal} onChange={(e) => setSettingsForm({ ...settingsForm, monthlyIncomeGoal: e.target.value })} placeholder="Meta de renda mensal" />
+                <input type="number" step="0.01" value={settingsForm.emergencyFundTarget} onChange={(e) => setSettingsForm({ ...settingsForm, emergencyFundTarget: e.target.value })} placeholder="Reserva de emergência" />
+                <button className="primary-button" type="submit">Salvar configurações</button>
+              </form>
             </section>
           </div>
         )}
