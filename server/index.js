@@ -7,6 +7,7 @@ import path from 'path';
 import dotenv from 'dotenv';
 import fs from 'fs';
 import Database from 'better-sqlite3';
+import { pathToFileURL } from 'url';
 
 dotenv.config();
 
@@ -228,6 +229,12 @@ const sanitizeUser = (user) => ({
   created_at: user.created_at,
 });
 
+const currencyFormat = (value) =>
+  new Intl.NumberFormat('pt-BR', {
+    style: 'currency',
+    currency: 'EUR',
+  }).format(Number(value || 0));
+
 const calculateDashboard = (userId) => {
   const accounts = all('SELECT * FROM accounts WHERE user_id = ? ORDER BY id DESC', [userId]);
   const transactions = all(
@@ -336,12 +343,6 @@ const calculateDashboard = (userId) => {
     },
   };
 };
-
-const currencyFormat = (value) =>
-  new Intl.NumberFormat('pt-BR', {
-    style: 'currency',
-    currency: 'EUR',
-  }).format(Number(value || 0));
 
 app.use(cors());
 app.use(express.json({ limit: '2mb' }));
@@ -734,8 +735,13 @@ app.use((error, req, res, next) => {
   res.status(500).json({ error: 'Erro interno do servidor.' });
 });
 
-app.listen(PORT, () => {
-  console.log(`Finance Pro API running on http://localhost:${PORT}`);
-});
+const isMainModule = process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href;
 
+if (isMainModule) {
+  app.listen(PORT, () => {
+    console.log(`Finance Pro API running on http://localhost:${PORT}`);
+  });
+}
+
+export { app, databasePath, createTables, calculateDashboard };
 export default app;
