@@ -275,6 +275,84 @@ select:focus {
   width: min(100%, 480px);
 }
 
+.overview-panel {
+  padding: 18px 18px 16px;
+  border-radius: 26px;
+  background: linear-gradient(135deg, rgba(110, 231, 216, 0.2), rgba(96, 165, 250, 0.14), rgba(18, 35, 49, 1));
+  border: 1px solid rgba(110, 231, 216, 0.25);
+  box-shadow: var(--shadow);
+}
+
+.overview-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(110, 231, 216, 0.12);
+  border: 1px solid rgba(110, 231, 216, 0.2);
+  color: var(--primary);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.muted-label {
+  color: var(--muted);
+  font-size: 0.72rem;
+}
+
+.balance-block {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.balance-block label {
+  font-size: 0.76rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.balance-block strong {
+  font-size: clamp(2rem, 8vw, 2.7rem);
+  letter-spacing: -0.06em;
+}
+
+.quick-stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.quick-stats div {
+  background: rgba(8, 19, 29, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 18px;
+  padding: 12px 14px;
+  display: grid;
+  gap: 6px;
+}
+
+.quick-stats span {
+  color: var(--muted);
+  font-size: 0.72rem;
+}
+
+.quick-stats strong {
+  font-size: 1rem;
+}
+
 .cards-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -550,7 +628,8 @@ select:focus {
 
   .cards-grid,
   .account-grid,
-  .form-grid.compact {
+  .form-grid.compact,
+  .quick-stats {
     grid-template-columns: 1fr;
   }
 

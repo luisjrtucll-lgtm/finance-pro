@@ -545,6 +545,29 @@ function App() {
       </header>
 
       <main className="content">
+        <section className="overview-panel">
+          <div className="overview-head">
+            <span className="pill">Disponível</span>
+            <span className="muted-label">{isInstalled ? 'App em tela cheia' : 'PWA pronta'}</span>
+          </div>
+
+          <div className="balance-block">
+            <label>Saldo principal</label>
+            <strong>{formatCurrency(data.dashboard.totalBalance)}</strong>
+          </div>
+
+          <div className="quick-stats">
+            <div>
+              <span>Economia</span>
+              <strong>{formatCurrency(data.dashboard.monthlySavings)}</strong>
+            </div>
+            <div>
+              <span>Projetado</span>
+              <strong>{formatCurrency(data.dashboard.projectedBalance)}</strong>
+            </div>
+          </div>
+        </section>
+
         <section className="cards-grid">
           {summaryCards.map((card) => (
             <article key={card.label} className={`summary-card ${card.tone}`}>
